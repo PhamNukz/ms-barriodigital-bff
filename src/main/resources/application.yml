@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: ms-barriodigital-bff
+  mvc:
+    problemdetails:
+      enabled: true
 
 barriodigital:
   requests:
