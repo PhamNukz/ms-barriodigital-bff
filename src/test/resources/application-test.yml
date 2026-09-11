@@ -1,0 +1,10 @@
+barriodigital:
+  requests:
+    base-url: http://localhost:9998
+  catalog:
+    base-url: http://localhost:9999
+  security:
+    issuer-uri: https://login.microsoftonline.com/test-tenant/v2.0
+    audiences:
+      - api://test-api
+    required-scope: access_as_user
