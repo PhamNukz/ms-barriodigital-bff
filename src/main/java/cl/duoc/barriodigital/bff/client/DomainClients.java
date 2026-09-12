@@ -1,11 +1,14 @@
 package cl.duoc.barriodigital.bff.client;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.ClientHttpRequestFactories;
+import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +21,22 @@ public class DomainClients {
 
     public DomainClients(@Value("${barriodigital.requests.base-url}") String requestsUrl,
                          @Value("${barriodigital.catalog.base-url}") String catalogUrl) {
-        this.requests = RestClient.builder().baseUrl(requestsUrl).build();
-        this.catalog = RestClient.builder().baseUrl(catalogUrl).build();
+        this.requests = clientePara(requestsUrl);
+        this.catalog = clientePara(catalogUrl);
+    }
+
+    /**
+     * Timeouts acotados: sin esto, un microservicio colgado dejaba la peticion
+     * del usuario esperando indefinidamente (el API Gateway corta a los 30s).
+     */
+    private static RestClient clientePara(String baseUrl) {
+        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.DEFAULTS
+                .withConnectTimeout(Duration.ofSeconds(3))
+                .withReadTimeout(Duration.ofSeconds(10));
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .requestFactory(ClientHttpRequestFactories.get(settings))
+                .build();
     }
 
     private static final ParameterizedTypeReference<List<Map<String, Object>>> LIST =
