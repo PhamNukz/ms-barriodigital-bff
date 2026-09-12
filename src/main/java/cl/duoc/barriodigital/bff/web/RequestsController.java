@@ -31,6 +31,12 @@ public class RequestsController {
         return clients.listarRequests(uri.build().toUriString(), jwt.getTokenValue());
     }
 
+    /** Endpoint esencial del caso (seccion 5). */
+    @GetMapping("/{id}")
+    public Map<String, Object> obtener(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        return clients.obtenerRequest(id, jwt.getTokenValue());
+    }
+
     @GetMapping("/cupos")
     public List<Map<String, Object>> cuposDeHoy(@AuthenticationPrincipal Jwt jwt) {
         return clients.cuposDeHoy(jwt.getTokenValue());
