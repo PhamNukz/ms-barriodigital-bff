@@ -50,11 +50,6 @@ public class DomainClients {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
     }
 
-    public Map<String, Object> obtenerRequest(Long id, String bearer) {
-        return requests.get().uri("/requests/{id}", id)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
-    }
-
     public List<Map<String, Object>> cuposDeHoy(String bearer) {
         return requests.get().uri("/requests/cupos")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
