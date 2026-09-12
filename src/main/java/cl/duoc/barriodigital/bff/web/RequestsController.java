@@ -36,11 +36,6 @@ public class RequestsController {
         return clients.obtenerRequest(id, jwt.getTokenValue());
     }
 
-    @GetMapping("/tipos/{tipoId}/cupo")
-    public Map<String, Object> cupoDeHoy(@PathVariable Long tipoId, @AuthenticationPrincipal Jwt jwt) {
-        return clients.cupoDeHoy(tipoId, jwt.getTokenValue());
-    }
-
     @GetMapping("/cupos")
     public List<Map<String, Object>> cuposDeHoy(@AuthenticationPrincipal Jwt jwt) {
         return clients.cuposDeHoy(jwt.getTokenValue());
