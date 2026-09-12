@@ -38,6 +38,11 @@ public class DomainClients {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
     }
 
+    public Map<String, Object> cupoDeHoy(Long tipoId, String bearer) {
+        return requests.get().uri("/requests/tipos/{tipoId}/cupo", tipoId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
+    }
+
     public Map<String, Object> crearRequest(Object body, String bearer) {
         return requests.post().uri("/requests")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(ONE);
