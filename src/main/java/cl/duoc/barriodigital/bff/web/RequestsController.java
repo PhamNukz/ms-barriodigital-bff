@@ -41,6 +41,11 @@ public class RequestsController {
         return clients.cupoDeHoy(tipoId, jwt.getTokenValue());
     }
 
+    @GetMapping("/cupos")
+    public List<Map<String, Object>> cuposDeHoy(@AuthenticationPrincipal Jwt jwt) {
+        return clients.cuposDeHoy(jwt.getTokenValue());
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('Vecino','Funcionario')")
