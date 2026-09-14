@@ -1,6 +1,7 @@
 package cl.duoc.barriodigital.bff;
 
 import org.junit.jupiter.api.Test;
+import cl.duoc.barriodigital.bff.client.DomainClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,9 @@ class BffSecurityTest {
     @MockBean
     JwtDecoder jwtDecoder;
 
+    @MockBean
+    DomainClients clients;
+
     @Test
     void sin_token_devuelve_401_con_cuerpo_json() throws Exception {
         mvc.perform(get("/api/requests"))
@@ -42,5 +46,20 @@ class BffSecurityTest {
                 .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
            .andExpect(status().isForbidden())
            .andExpect(jsonPath("$.error").value("acceso_denegado"));
+    }
+
+    @Test
+    void vecino_no_ve_kpis_403() throws Exception {
+        mvc.perform(get("/api/report/kpis")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
+           .andExpect(status().isForbidden())
+           .andExpect(jsonPath("$.error").value("acceso_denegado"));
+    }
+
+    @Test
+    void auditor_no_ve_kpis_pero_si_timeline() throws Exception {
+        var auditor = jwt().authorities(new SimpleGrantedAuthority("ROLE_Auditor"));
+        mvc.perform(get("/api/report/kpis").with(auditor)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/audit/timeline").with(auditor)).andExpect(status().isOk());
     }
 }

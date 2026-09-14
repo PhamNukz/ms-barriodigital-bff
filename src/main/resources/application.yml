@@ -13,6 +13,10 @@ barriodigital:
     base-url: ${MS_REQUESTS_URL:http://localhost:8081}
   catalog:
     base-url: ${MS_CATALOG_URL:http://localhost:8082}
+  audit:
+    base-url: ${MS_AUDIT_URL:http://localhost:8083}
+  report:
+    base-url: ${MS_REPORT_URL:http://localhost:8084}
   cors:
     # Coma-separado. En prod: el dominio real del frontend (CloudFront/S3, etc.)
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}

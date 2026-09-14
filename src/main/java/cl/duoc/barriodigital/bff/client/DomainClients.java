@@ -18,11 +18,17 @@ public class DomainClients {
 
     private final RestClient requests;
     private final RestClient catalog;
+    private final RestClient audit;
+    private final RestClient report;
 
     public DomainClients(@Value("${barriodigital.requests.base-url}") String requestsUrl,
-                         @Value("${barriodigital.catalog.base-url}") String catalogUrl) {
+                         @Value("${barriodigital.catalog.base-url}") String catalogUrl,
+                         @Value("${barriodigital.audit.base-url}") String auditUrl,
+                         @Value("${barriodigital.report.base-url}") String reportUrl) {
         this.requests = clientePara(requestsUrl);
         this.catalog = clientePara(catalogUrl);
+        this.audit = clientePara(auditUrl);
+        this.report = clientePara(reportUrl);
     }
 
     /**
@@ -84,5 +90,21 @@ public class DomainClients {
     public Map<String, Object> actualizarTipoTramite(Long id, Object body, String bearer) {
         return catalog.put().uri("/catalog/procedures/{id}", id)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(ONE);
+    }
+
+    // ---- audit / report (solo lectura; el query string se reenvia tal cual) ----
+    public List<Map<String, Object>> timeline(String query, String bearer) {
+        return audit.get().uri("/audit/timeline" + query)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
+    }
+
+    public Map<String, Object> kpis(String query, String bearer) {
+        return report.get().uri("/report/kpis" + query)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
+    }
+
+    public List<Map<String, Object>> topProcedures(String query, String bearer) {
+        return report.get().uri("/report/top-procedures" + query)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
     }
 }

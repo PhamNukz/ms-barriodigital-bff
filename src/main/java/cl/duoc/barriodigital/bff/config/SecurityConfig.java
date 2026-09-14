@@ -46,6 +46,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/requests/**").hasAnyRole("Funcionario", "Admin")
                 .requestMatchers(HttpMethod.POST, "/api/catalog/**").hasRole("Admin")
                 .requestMatchers(HttpMethod.PUT, "/api/catalog/**").hasRole("Admin")
+                .requestMatchers("/api/audit/**").hasAnyRole("Admin", "Auditor")
+                .requestMatchers("/api/report/**").hasRole("Admin")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(oauth -> oauth
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
