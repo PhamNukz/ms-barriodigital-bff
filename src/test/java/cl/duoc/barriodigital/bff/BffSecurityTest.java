@@ -62,4 +62,33 @@ class BffSecurityTest {
         mvc.perform(get("/api/report/kpis").with(auditor)).andExpect(status().isForbidden());
         mvc.perform(get("/api/audit/timeline").with(auditor)).andExpect(status().isOk());
     }
+
+    @Test
+    void funcionario_ve_el_timeline_de_auditoria() throws Exception {
+        mvc.perform(get("/api/audit/timeline").param("persona", "vecino1@duocuc.cl")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"))))
+           .andExpect(status().isOk());
+    }
+
+    @Test
+    void solo_admin_ve_las_colas_de_rabbitmq() throws Exception {
+        mvc.perform(get("/api/admin/queues").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"))))
+           .andExpect(status().isForbidden());
+        mvc.perform(get("/api/admin/queues").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin"))))
+           .andExpect(status().isOk());
+    }
+
+    @Test
+    void vecino_no_puede_programar_pasos_del_seguimiento_403() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/requests/1/seguimiento/ADMITIDO")
+                .contentType("application/json").content("{\"nota\":\"x\"}")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
+           .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void vecino_puede_ver_el_seguimiento() throws Exception {
+        mvc.perform(get("/api/requests/1/seguimiento").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
+           .andExpect(status().isOk());
+    }
 }

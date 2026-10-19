@@ -7,6 +7,8 @@ barriodigital:
     base-url: http://localhost:9997
   report:
     base-url: http://localhost:9996
+  rabbitadmin:
+    base-url: http://localhost:9995
   security:
     issuer-uri: https://login.microsoftonline.com/test-tenant/v2.0
     audiences:

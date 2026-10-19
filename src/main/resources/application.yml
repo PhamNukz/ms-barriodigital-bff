@@ -17,6 +17,9 @@ barriodigital:
     base-url: ${MS_AUDIT_URL:http://localhost:8083}
   report:
     base-url: ${MS_REPORT_URL:http://localhost:8084}
+  rabbitadmin:
+    # Plano de control de RabbitMQ (desde el BFF solo se lee el estado de las colas)
+    base-url: ${MS_RABBITADMIN_URL:http://localhost:8086}
   cors:
     # Coma-separado. En prod: el dominio real del frontend (CloudFront/S3, etc.)
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
