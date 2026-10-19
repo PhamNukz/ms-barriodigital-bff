@@ -20,15 +20,18 @@ public class DomainClients {
     private final RestClient catalog;
     private final RestClient audit;
     private final RestClient report;
+    private final RestClient rabbitadmin;
 
     public DomainClients(@Value("${barriodigital.requests.base-url}") String requestsUrl,
                          @Value("${barriodigital.catalog.base-url}") String catalogUrl,
                          @Value("${barriodigital.audit.base-url}") String auditUrl,
-                         @Value("${barriodigital.report.base-url}") String reportUrl) {
+                         @Value("${barriodigital.report.base-url}") String reportUrl,
+                         @Value("${barriodigital.rabbitadmin.base-url}") String rabbitadminUrl) {
         this.requests = clientePara(requestsUrl);
         this.catalog = clientePara(catalogUrl);
         this.audit = clientePara(auditUrl);
         this.report = clientePara(reportUrl);
+        this.rabbitadmin = clientePara(rabbitadminUrl);
     }
 
     /**
@@ -76,6 +79,16 @@ public class DomainClients {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(ONE);
     }
 
+    public List<Map<String, Object>> seguimiento(Long id, String bearer) {
+        return requests.get().uri("/requests/{id}/seguimiento", id)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
+    }
+
+    public List<Map<String, Object>> planificarPaso(Long id, String estado, Object body, String bearer) {
+        return requests.put().uri("/requests/{id}/seguimiento/{estado}", id, estado)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(LIST);
+    }
+
     // ---- catalog ----
     public List<Map<String, Object>> listarCatalogo(String bearer) {
         return catalog.get().uri("/catalog/procedures")
@@ -105,6 +118,12 @@ public class DomainClients {
 
     public List<Map<String, Object>> topProcedures(String query, String bearer) {
         return report.get().uri("/report/top-procedures" + query)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
+    }
+
+    // ---- rabbitadmin (solo lectura: mensajes y consumidores de cada cola) ----
+    public List<Map<String, Object>> colas(String bearer) {
+        return rabbitadmin.get().uri("/admin/queues")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(LIST);
     }
 }
