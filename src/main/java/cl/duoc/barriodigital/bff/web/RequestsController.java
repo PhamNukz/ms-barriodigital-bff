@@ -102,6 +102,28 @@ public class RequestsController {
         return clients.accionRequest(HttpMethod.PUT, id, "en-camino", null, jwt.getTokenValue());
     }
 
+    /** El funcionario confirmo la visita por telefono; body opcional {nota}. */
+    @PutMapping("/{id}/visita/confirmar")
+    @PreAuthorize("hasAnyRole('Funcionario','Admin')")
+    public Map<String, Object> confirmarVisita(@PathVariable Long id,
+                                               @RequestBody(required = false) Map<String, Object> body,
+                                               @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.PUT, id, "visita/confirmar", body, jwt.getTokenValue());
+    }
+
+    /** Contactos (familiares en copia): solo el vecino dueno; requests responde 403 a cualquier otro. */
+    @PostMapping("/{id}/contactos")
+    public Map<String, Object> agregarContacto(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                               @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.POST, id, "contactos", body, jwt.getTokenValue());
+    }
+
+    @DeleteMapping("/{id}/contactos/{contactoId}")
+    public Map<String, Object> quitarContacto(@PathVariable Long id, @PathVariable Long contactoId,
+                                              @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.DELETE, id, "contactos/" + contactoId, null, jwt.getTokenValue());
+    }
+
     /**
      * vecinoUsername: solo Funcionario, para ingresar el tramite a nombre de un vecino.
      * lat/lng/referencia: el punto marcado en el mapa; requests valida que caiga en Valparaiso.
