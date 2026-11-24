@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -131,6 +132,22 @@ class BffSecurityTest {
 
         verify(clients).accionRequest(eq(HttpMethod.POST), eq(5L), eq("visita/respuesta"), any(), any());
         verify(clients).accionRequest(eq(HttpMethod.PUT), eq(5L), eq("en-camino"), isNull(), any());
+    }
+
+    @Test
+    void rutas_de_confirmacion_por_telefono_y_contactos_llegan_a_requests() throws Exception {
+        var vecino = jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"));
+        var funcionario = jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"));
+
+        mvc.perform(put("/api/requests/5/visita/confirmar").with(funcionario)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/5/visita/confirmar").with(vecino)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/requests/5/contactos").contentType("application/json")
+                .content("{\"nombre\":\"Hija\",\"correo\":\"hija@correo.cl\"}").with(vecino)).andExpect(status().isOk());
+        mvc.perform(delete("/api/requests/5/contactos/9").with(vecino)).andExpect(status().isOk());
+
+        verify(clients).accionRequest(eq(HttpMethod.PUT), eq(5L), eq("visita/confirmar"), isNull(), any());
+        verify(clients).accionRequest(eq(HttpMethod.POST), eq(5L), eq("contactos"), any(), any());
+        verify(clients).accionRequest(eq(HttpMethod.DELETE), eq(5L), eq("contactos/9"), isNull(), any());
     }
 
     @Test
