@@ -45,6 +45,11 @@ public class SecurityConfig {
                 // Antes que la regla general de POST: restaurar es de Admin y Auditor.
                 .requestMatchers(HttpMethod.POST, "/api/requests/*/restaurar").hasAnyRole("Admin", "Auditor")
                 .requestMatchers(HttpMethod.POST, "/api/requests/**").hasAnyRole("Vecino", "Funcionario")
+                // Admin B, solo Admin (defensa en profundidad: el controlador y requests tambien lo exigen).
+                // Van antes de la regla general de PUT, y el DELETE de contactos antes que el del tramite.
+                .requestMatchers(HttpMethod.PUT, "/api/requests/reglas", "/api/requests/*/visibilidad").hasRole("Admin")
+                .requestMatchers(HttpMethod.DELETE, "/api/requests/*/contactos/*").hasAnyRole("Vecino", "Funcionario")
+                .requestMatchers(HttpMethod.DELETE, "/api/requests/*").hasRole("Admin")
                 .requestMatchers(HttpMethod.PUT, "/api/requests/**").hasAnyRole("Funcionario", "Admin")
                 .requestMatchers(HttpMethod.POST, "/api/catalog/**").hasRole("Admin")
                 .requestMatchers(HttpMethod.PUT, "/api/catalog/**").hasRole("Admin")
