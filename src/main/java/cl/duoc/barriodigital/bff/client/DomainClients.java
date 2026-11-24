@@ -5,6 +5,7 @@ import org.springframework.boot.web.client.ClientHttpRequestFactories;
 import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -87,6 +88,14 @@ public class DomainClients {
     public List<Map<String, Object>> planificarPaso(Long id, String estado, Object body, String bearer) {
         return requests.put().uri("/requests/{id}/seguimiento/{estado}", id, estado)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(LIST);
+    }
+
+    /** Subrutas de accion de un tramite (responsable, visita, visita/respuesta, en-camino); body puede ser null. */
+    public Map<String, Object> accionRequest(HttpMethod metodo, Long id, String accion, Object body, String bearer) {
+        var spec = requests.method(metodo).uri("/requests/{id}/" + accion, id)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer);
+        if (body != null) spec.body(body);
+        return spec.retrieve().body(ONE);
     }
 
     // ---- catalog ----

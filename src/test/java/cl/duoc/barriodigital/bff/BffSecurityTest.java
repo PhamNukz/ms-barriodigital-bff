@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,6 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -107,5 +113,30 @@ class BffSecurityTest {
         org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("-33.0418"), body.lat());
         org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("-71.6269"), body.lng());
         org.junit.jupiter.api.Assertions.assertEquals("Casa azul", body.referencia());
+    }
+
+    @Test
+    void rutas_de_visita_y_responsable_llegan_a_requests() throws Exception {
+        var vecino = jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"));
+        var funcionario = jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"));
+
+        mvc.perform(post("/api/requests/5/visita/respuesta").contentType("application/json")
+                .content("{\"respuesta\":\"CONFIRMAR\"}").with(vecino)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/5/visita").contentType("application/json")
+                .content("{\"fecha\":\"2030-01-15\",\"franja\":\"MANANA\",\"cuadrilla\":\"Norte\"}")
+                .with(funcionario)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/5/responsable").contentType("application/json")
+                .content("{\"responsable\":\"a@duocuc.cl\"}").with(funcionario)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/5/en-camino").with(funcionario)).andExpect(status().isOk());
+
+        verify(clients).accionRequest(eq(HttpMethod.POST), eq(5L), eq("visita/respuesta"), any(), any());
+        verify(clients).accionRequest(eq(HttpMethod.PUT), eq(5L), eq("en-camino"), isNull(), any());
+    }
+
+    @Test
+    void vecino_no_propone_visita_403() throws Exception {
+        mvc.perform(put("/api/requests/5/visita").contentType("application/json").content("{}")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
+           .andExpect(status().isForbidden());
     }
 }

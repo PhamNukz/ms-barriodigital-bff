@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,6 +71,35 @@ public class RequestsController {
     public Map<String, Object> cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstado body,
                                              @AuthenticationPrincipal Jwt jwt) {
         return clients.cambiarEstadoRequest(id, body, jwt.getTokenValue());
+    }
+
+    // Visita y responsable: el body se reenvia tal cual y lo valida requests (sus 400/403/404/409
+    // vuelven al front por BffExceptionHandler).
+    @PutMapping("/{id}/responsable")
+    @PreAuthorize("hasAnyRole('Funcionario','Admin')")
+    public Map<String, Object> asignarResponsable(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                                  @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.PUT, id, "responsable", body, jwt.getTokenValue());
+    }
+
+    @PutMapping("/{id}/visita")
+    @PreAuthorize("hasAnyRole('Funcionario','Admin')")
+    public Map<String, Object> proponerVisita(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                              @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.PUT, id, "visita", body, jwt.getTokenValue());
+    }
+
+    /** Solo el vecino dueno; requests responde 403 a cualquier otro. */
+    @PostMapping("/{id}/visita/respuesta")
+    public Map<String, Object> responderVisita(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                               @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.POST, id, "visita/respuesta", body, jwt.getTokenValue());
+    }
+
+    @PutMapping("/{id}/en-camino")
+    @PreAuthorize("hasAnyRole('Funcionario','Admin')")
+    public Map<String, Object> avisarEnCamino(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.PUT, id, "en-camino", null, jwt.getTokenValue());
     }
 
     /**
