@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -71,9 +72,13 @@ public class RequestsController {
         return clients.cambiarEstadoRequest(id, body, jwt.getTokenValue());
     }
 
-    /** vecinoUsername: solo Funcionario, para ingresar el tramite a nombre de un vecino. */
+    /**
+     * vecinoUsername: solo Funcionario, para ingresar el tramite a nombre de un vecino.
+     * lat/lng/referencia: el punto marcado en el mapa; requests valida que caiga en Valparaiso.
+     */
     public record CrearTramite(@NotNull Long tipoId, @NotBlank String descripcion, String direccion,
-                               @Email @Size(max = 150) String vecinoUsername) {
+                               @Email @Size(max = 150) String vecinoUsername,
+                               BigDecimal lat, BigDecimal lng, @Size(max = 300) String referencia) {
     }
 
     public record CambiarEstado(@NotBlank String status, @Size(max = 500) String nota) {

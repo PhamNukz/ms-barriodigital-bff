@@ -91,4 +91,21 @@ class BffSecurityTest {
         mvc.perform(get("/api/requests/1/seguimiento").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
            .andExpect(status().isOk());
     }
+
+    /** El BFF tiene su propio DTO: un campo que no declare se pierde sin error antes de llegar a requests. */
+    @Test
+    void crear_tramite_reenvia_el_punto_del_mapa_y_la_referencia() throws Exception {
+        mvc.perform(post("/api/requests")
+                .contentType("application/json")
+                .content("{\"tipoId\":1,\"descripcion\":\"Bache\",\"lat\":-33.0418,\"lng\":-71.6269,\"referencia\":\"Casa azul\"}")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"))))
+           .andExpect(status().isCreated());
+
+        var enviado = org.mockito.ArgumentCaptor.forClass(Object.class);
+        org.mockito.Mockito.verify(clients).crearRequest(enviado.capture(), org.mockito.ArgumentMatchers.any());
+        var body = (cl.duoc.barriodigital.bff.web.RequestsController.CrearTramite) enviado.getValue();
+        org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("-33.0418"), body.lat());
+        org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("-71.6269"), body.lng());
+        org.junit.jupiter.api.Assertions.assertEquals("Casa azul", body.referencia());
+    }
 }
