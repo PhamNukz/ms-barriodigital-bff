@@ -98,6 +98,22 @@ public class DomainClients {
         return spec.retrieve().body(ONE);
     }
 
+    /** Papelera: el motivo va en la query; la plantilla de la URI lo codifica (espacios, tildes). */
+    public Map<String, Object> eliminarRequest(Long id, String motivo, String bearer) {
+        return requests.delete().uri("/requests/{id}?motivo={motivo}", id, motivo == null ? "" : motivo)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
+    }
+
+    public Map<String, Object> reglas(String bearer) {
+        return requests.get().uri("/requests/reglas")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).retrieve().body(ONE);
+    }
+
+    public Map<String, Object> cambiarReglas(Object body, String bearer) {
+        return requests.put().uri("/requests/reglas")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer).body(body).retrieve().body(ONE);
+    }
+
     // ---- catalog ----
     public List<Map<String, Object>> listarCatalogo(String bearer) {
         return catalog.get().uri("/catalog/procedures")

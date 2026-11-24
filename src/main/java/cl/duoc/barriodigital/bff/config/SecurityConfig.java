@@ -42,6 +42,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Antes que la regla general de POST: restaurar es de Admin y Auditor.
+                .requestMatchers(HttpMethod.POST, "/api/requests/*/restaurar").hasAnyRole("Admin", "Auditor")
                 .requestMatchers(HttpMethod.POST, "/api/requests/**").hasAnyRole("Vecino", "Funcionario")
                 .requestMatchers(HttpMethod.PUT, "/api/requests/**").hasAnyRole("Funcionario", "Admin")
                 .requestMatchers(HttpMethod.POST, "/api/catalog/**").hasRole("Admin")

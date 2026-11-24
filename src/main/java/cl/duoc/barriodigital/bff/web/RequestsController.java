@@ -54,6 +54,41 @@ public class RequestsController {
         return clients.planificarPaso(id, estado, body, jwt.getTokenValue());
     }
 
+    /** Antes que /{id}: "reglas" no es un id. Las lee cualquier autenticado. */
+    @GetMapping("/reglas")
+    public Map<String, Object> reglas(@AuthenticationPrincipal Jwt jwt) {
+        return clients.reglas(jwt.getTokenValue());
+    }
+
+    @PutMapping("/reglas")
+    @PreAuthorize("hasRole('Admin')")
+    public Map<String, Object> cambiarReglas(@RequestBody Map<String, Object> body, @AuthenticationPrincipal Jwt jwt) {
+        return clients.cambiarReglas(body, jwt.getTokenValue());
+    }
+
+    // ---- Admin B: visibilidad, papelera y restaurar ----
+    @PutMapping("/{id}/visibilidad")
+    @PreAuthorize("hasRole('Admin')")
+    public Map<String, Object> cambiarVisibilidad(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                                  @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.PUT, id, "visibilidad", body, jwt.getTokenValue());
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('Admin')")
+    public Map<String, Object> enviarAPapelera(@PathVariable Long id, @RequestParam(required = false) String motivo,
+                                               @AuthenticationPrincipal Jwt jwt) {
+        return clients.eliminarRequest(id, motivo, jwt.getTokenValue());
+    }
+
+    /** Admin siempre; Auditor solo con la regla auditorRestaura (lo decide requests). */
+    @PostMapping("/{id}/restaurar")
+    @PreAuthorize("hasAnyRole('Admin','Auditor')")
+    public Map<String, Object> restaurar(@PathVariable Long id, @RequestBody Map<String, Object> body,
+                                         @AuthenticationPrincipal Jwt jwt) {
+        return clients.accionRequest(HttpMethod.POST, id, "restaurar", body, jwt.getTokenValue());
+    }
+
     @GetMapping("/cupos")
     public List<Map<String, Object>> cuposDeHoy(@AuthenticationPrincipal Jwt jwt) {
         return clients.cuposDeHoy(jwt.getTokenValue());

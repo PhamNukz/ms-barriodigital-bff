@@ -135,6 +135,34 @@ class BffSecurityTest {
     }
 
     @Test
+    void rutas_de_admin_b_llegan_a_requests_con_sus_roles() throws Exception {
+        var admin = jwt().authorities(new SimpleGrantedAuthority("ROLE_Admin"));
+        var auditor = jwt().authorities(new SimpleGrantedAuthority("ROLE_Auditor"));
+        var funcionario = jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"));
+        var vecino = jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"));
+
+        mvc.perform(put("/api/requests/5/visibilidad").contentType("application/json")
+                .content("{\"visibleVecino\":false,\"motivo\":\"Duplicado\"}").with(admin)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/5/visibilidad").contentType("application/json")
+                .content("{\"visibleVecino\":false,\"motivo\":\"Duplicado\"}").with(funcionario)).andExpect(status().isForbidden());
+        mvc.perform(delete("/api/requests/5").param("motivo", "Ingresado por error").with(admin)).andExpect(status().isOk());
+        mvc.perform(delete("/api/requests/5").param("motivo", "x").with(vecino)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/requests/5/restaurar").contentType("application/json")
+                .content("{\"motivo\":\"Error\"}").with(auditor)).andExpect(status().isOk());
+        mvc.perform(post("/api/requests/5/restaurar").contentType("application/json")
+                .content("{\"motivo\":\"Error\"}").with(vecino)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/requests/reglas").with(vecino)).andExpect(status().isOk());
+        mvc.perform(put("/api/requests/reglas").contentType("application/json").content("{}").with(funcionario))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/api/requests/reglas").contentType("application/json").content("{}").with(admin))
+                .andExpect(status().isOk());
+
+        verify(clients).eliminarRequest(eq(5L), eq("Ingresado por error"), any());
+        verify(clients).accionRequest(eq(HttpMethod.POST), eq(5L), eq("restaurar"), any(), any());
+        verify(clients).reglas(any());
+    }
+
+    @Test
     void rutas_de_confirmacion_por_telefono_y_contactos_llegan_a_requests() throws Exception {
         var vecino = jwt().authorities(new SimpleGrantedAuthority("ROLE_Vecino"));
         var funcionario = jwt().authorities(new SimpleGrantedAuthority("ROLE_Funcionario"));
